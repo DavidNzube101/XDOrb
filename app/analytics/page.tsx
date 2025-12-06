@@ -30,7 +30,7 @@ export default function AnalyticsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Advanced Analytics</h1>
+          <h1 className="text-3xl font-bold text-foreground">XDOrb Analytics</h1>
           <p className="text-muted-foreground mt-1">Deep dive into network performance metrics</p>
         </div>
 

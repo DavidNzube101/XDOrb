@@ -9,8 +9,8 @@ const ibmPlexMono = V0_Font_IBM_Plex_Mono({ subsets: ['latin'], weight: ["100","
 const lora = V0_Font_Lora({ subsets: ['latin'], weight: ["400","500","600","700"] })
 
 export const metadata: Metadata = {
-  title: "Analytics Dashboard",
-  description: "Premium pNode Analytics & Monitoring",
+  title: "XDOrb - Xandeum Analytics Platform",
+  description: "Premium pNode Analytics & Monitoring for Xandeum Network",
   generator: "v0.app",
   icons: {
     icon: [
@@ -28,6 +28,28 @@ export const metadata: Metadata = {
       },
     ],
     apple: "/apple-icon.png",
+  },
+  openGraph: {
+    title: "XDOrb - Xandeum Analytics Platform",
+    description: "Real-time pNode monitoring and analytics for the Xandeum network",
+    url: "https://xdorb.appwrite.network",
+    siteName: "XDOrb",
+    images: [
+      {
+        url: "/XDOrb_Banner.png",
+        width: 1200,
+        height: 630,
+        alt: "XDOrb - Xandeum Analytics Platform",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "XDOrb - Xandeum Analytics Platform",
+    description: "Real-time pNode monitoring and analytics for the Xandeum network",
+    images: ["/XDOrb_Banner.png"],
   },
 }
 

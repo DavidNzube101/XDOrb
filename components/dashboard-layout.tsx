@@ -39,11 +39,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           sidebarOpen ? "w-64" : "w-16"
         } bg-card border-r border-border transition-all duration-300 flex flex-col`}
       >
-        <div className="p-6 border-b border-border">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Analytics
-          </h1>
-        </div>
+         <div className="p-6 border-b border-border">
+           <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+             XDOrb
+           </h1>
+         </div>
 
         <nav className="flex-1 p-4 space-y-2">
            {[

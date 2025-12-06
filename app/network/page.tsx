@@ -9,7 +9,7 @@ export default function NetworkPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Network Map</h1>
+          <h1 className="text-3xl font-bold text-foreground">XDOrb Network</h1>
           <p className="text-muted-foreground mt-1">Global pNode distribution and network health</p>
         </div>
 

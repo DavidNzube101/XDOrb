@@ -10,7 +10,7 @@ export default function AboutPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">About Xandeum</h1>
+          <h1 className="text-3xl font-bold text-foreground">About XDOrb</h1>
           <p className="text-muted-foreground mt-1">Learn more about the Xandeum network and pNode analytics</p>
         </div>
 
@@ -43,12 +43,12 @@ export default function AboutPage() {
 
           <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle>About This Dashboard</CardTitle>
-              <CardDescription>Analytics platform for pNode monitoring</CardDescription>
+            <CardTitle>About XDOrb</CardTitle>
+            <CardDescription>Xandeum analytics platform for pNode monitoring</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                This comprehensive analytics dashboard provides real-time monitoring and insights for Xandeum pNodes. Built with Next.js, Tailwind CSS, and modern web technologies.
+                XDOrb is a comprehensive analytics platform providing real-time monitoring and insights for Xandeum pNodes. Built with Next.js, Tailwind CSS, and modern web technologies.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ export default function AboutPage() {
 
         <Card className="border-border bg-card">
           <CardHeader>
-            <CardTitle>Connect with Xandeum</CardTitle>
+            <CardTitle>Connect with XDOrb</CardTitle>
             <CardDescription>Join the community and stay updated</CardDescription>
           </CardHeader>
           <CardContent>
@@ -122,7 +122,7 @@ export default function AboutPage() {
 
         <Card className="border-border bg-card">
           <CardHeader>
-            <CardTitle>Technical Details</CardTitle>
+            <CardTitle>XDOrb Tech Stack</CardTitle>
             <CardDescription>Built with modern web technologies</CardDescription>
           </CardHeader>
           <CardContent>

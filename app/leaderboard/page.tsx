@@ -36,7 +36,7 @@ export default function LeaderboardPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Performance Leaderboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">XDOrb Leaderboard</h1>
           <p className="text-muted-foreground mt-1">Top performing pNodes by reward generation</p>
         </div>
 
