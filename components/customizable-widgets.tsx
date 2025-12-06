@@ -14,7 +14,7 @@ import { StorageVisualization } from "@/components/storage-visualization"
 interface Widget {
   id: string
   title: string
-  component: React.ComponentType
+  component: React.ComponentType<any>
   visible: boolean
   order: number
 }
@@ -23,6 +23,7 @@ const availableWidgets: Omit<Widget, 'visible' | 'order'>[] = [
   { id: 'network-health', title: 'Network Health', component: NetworkHealthChart },
   { id: 'reward-distribution', title: 'Reward Distribution', component: RewardDistribution },
   { id: 'performance-metrics', title: 'Performance Metrics', component: PerformanceMetrics },
+  { id: 'ai-insights', title: 'AI Insights', component: AIInsights },
   { id: 'storage-viz', title: 'Storage Visualization', component: StorageVisualization },
 ]
 
@@ -31,10 +32,18 @@ export function CustomizableWidgets() {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('dashboard-widgets')
       if (saved) {
-        const parsed = JSON.parse(saved)
+        let parsed = JSON.parse(saved)
+        // Add any new widgets that aren't in saved
+        const currentIds = parsed.map((w: any) => w.id)
+        availableWidgets.forEach(aw => {
+          if (!currentIds.includes(aw.id)) {
+            parsed.push({ id: aw.id, visible: true, order: parsed.length })
+          }
+        })
         return parsed.map((w: any) => ({
           ...w,
-          component: availableWidgets.find(aw => aw.id === w.id)?.component || NetworkHealthChart
+          component: availableWidgets.find(aw => aw.id === w.id)?.component || NetworkHealthChart,
+          title: availableWidgets.find(aw => aw.id === w.id)?.title || w.id
         }))
       }
     }

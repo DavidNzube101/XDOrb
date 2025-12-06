@@ -6,22 +6,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { aiClient, type AIInsight, type PNodeMetrics } from "@/lib/api"
+import useSWR from "swr"
+import { apiClient } from "@/lib/api"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-interface AIInsightsProps {
-  pnode: PNodeMetrics
-  history?: Array<{ timestamp: number; uptime: number }>
-}
-
-export function AIInsights({ pnode, history }: AIInsightsProps) {
+export function AIInsights() {
+  const [selectedId, setSelectedId] = useState<string>('')
   const [insight, setInsight] = useState<AIInsight | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const { data: pnodes } = useSWR('/pnodes', () => apiClient.getPNodes().then(r => r.data || []))
+  const { data: historyData } = useSWR(
+    selectedId ? `/pnodes/${selectedId}/history?range=24h` : null,
+    () => apiClient.getPNodeHistory(selectedId, '24h').then(r => r.data)
+  )
+
+  const selectedPnode = pnodes?.find(p => p.id === selectedId)
+
   const generateInsight = async () => {
+    if (!selectedPnode) return
     setLoading(true)
     setError(null)
     try {
-      const result = await aiClient.getPNodeInsight(pnode, history)
+      const result = await aiClient.getPNodeInsight(
+        selectedPnode,
+        historyData?.map(h => ({ timestamp: h.timestamp, uptime: h.uptime }))
+      )
       setInsight(result)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate insights')
@@ -31,8 +42,10 @@ export function AIInsights({ pnode, history }: AIInsightsProps) {
   }
 
   useEffect(() => {
-    generateInsight()
-  }, [pnode.id])
+    if (selectedPnode) {
+      generateInsight()
+    }
+  }, [selectedPnode?.id, historyData])
 
   const getRiskColor = (score: number) => {
     if (score < 30) return "bg-green-500/20 text-green-600"
@@ -54,11 +67,22 @@ export function AIInsights({ pnode, history }: AIInsightsProps) {
           AI-Powered Insights
         </CardTitle>
         <CardDescription>
-          Predictive analysis and recommendations for {pnode.name}
+          {selectedPnode ? `Predictive analysis and recommendations for ${selectedPnode.name}` : 'Select a pNode to analyze its performance'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {loading && (
+        <Select value={selectedId} onValueChange={setSelectedId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Choose a pNode" />
+          </SelectTrigger>
+          <SelectContent>
+            {pnodes?.slice(0, 10).map(p => (
+              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {selectedPnode && loading && (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             <span className="ml-2 text-muted-foreground">Analyzing performance...</span>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import useSWR from "swr"
+import { useParams } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { apiClient } from "@/lib/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,17 +18,14 @@ const historyData = [
   { timestamp: "20:00", latency: 41, uptime: 99.95, validations: 189 },
 ]
 
-interface PNodeDetailPageProps {
-  params: {
-    id: string
-  }
-}
+export default function PNodeDetailPage() {
+  const params = useParams()
+  const id = params.id as string
 
-export default function PNodeDetailPage({ params }: PNodeDetailPageProps) {
   const { data: node, isLoading } = useSWR(
-    `/pnodes/${params.id}`,
+    `/pnodes/${id}`,
     async () => {
-      const result = await apiClient.getPNodeById(params.id)
+      const result = await apiClient.getPNodeById(id)
       if (result.error) throw new Error(result.error)
       return result.data
     },
