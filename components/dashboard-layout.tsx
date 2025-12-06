@@ -39,10 +39,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           sidebarOpen ? "w-64" : "w-16"
         } bg-card border-r border-border transition-all duration-300 flex flex-col`}
       >
-         <div className="p-6 border-b border-border">
-           <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-             XDOrb
-           </h1>
+         <div className={`p-6 border-b border-border ${sidebarOpen ? "" : "flex justify-center"}`}>
+           {sidebarOpen ? (
+             <div className="flex items-center justify-center gap-3">
+               <img
+                 src="/Logo.png"
+                 alt="XDOrb Logo"
+                 className="h-8 w-auto"
+               />
+               <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                 XDOrb
+               </h1>
+             </div>
+           ) : (
+             <img
+               src="/Logo.png"
+               alt="XDOrb Logo"
+               className="max-h-6 w-auto object-contain"
+             />
+           )}
          </div>
 
         <nav className="flex-1 p-4 space-y-2">

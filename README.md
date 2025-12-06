@@ -1,5 +1,7 @@
 # XDOrb - Xandeum Analytics Platform
 
+<img src="/Logo.png" alt="XDOrb Logo" width="200" height="auto" />
+
 XDOrb is a comprehensive analytics platform for monitoring and analyzing Xandeum pNodes in real-time.
 
 ## Features

@@ -171,6 +171,11 @@ export default function FeaturesPage() {
     <DashboardLayout>
       <div className="space-y-8">
         <div className="text-center space-y-4">
+          <img
+            src="/Logo.png"
+            alt="XDOrb Logo"
+            className="h-20 w-auto mx-auto mb-6"
+          />
           <h1 className="text-4xl font-bold text-foreground">XDOrb Features</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Comprehensive analytics platform for Xandeum pNodes with real-time monitoring,
