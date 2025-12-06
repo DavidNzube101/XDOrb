@@ -2,18 +2,44 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import useSWR from "swr"
+import { apiClient } from "@/lib/api"
 
-const data = [
-  { time: "00:00", health: 98.2, active: 1200 },
-  { time: "04:00", health: 97.8, active: 1180 },
-  { time: "08:00", health: 99.1, active: 1240 },
-  { time: "12:00", health: 96.5, active: 1100 },
-  { time: "16:00", health: 98.9, active: 1320 },
-  { time: "20:00", health: 99.3, active: 1380 },
-  { time: "24:00", health: 98.7, active: 1295 },
-]
+const fetcher = async () => {
+  const result = await apiClient.getDashboardStats()
+  if (result.error) throw new Error(result.error)
+  return result.data
+}
+
+const historyFetcher = async () => {
+  const result = await apiClient.getNetworkHistory("24h")
+  if (result.error) throw new Error(result.error)
+  return result.data
+}
 
 export function NetworkHealthChart() {
+  const { data: stats, isLoading: statsLoading } = useSWR("dashboard-stats", fetcher, {
+    refreshInterval: 30000,
+  })
+
+  const { data: history, isLoading: historyLoading } = useSWR("network-history", historyFetcher, {
+    refreshInterval: 30000,
+  })
+
+  // Transform historical data for the chart
+  const data = Array.isArray(history) && history.length > 0
+    ? history.slice(-7).map((point: any, index: number) => ({
+        time: new Date(point.timestamp * 1000).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }),
+        health: point.uptime,
+        active: stats?.activeNodes || 1200,
+      }))
+    : [
+        { time: "00:00", health: stats?.networkHealth || 98.2, active: stats?.activeNodes || 1200 },
+      ]
   return (
     <Card className="border-border bg-card">
       <CardHeader>

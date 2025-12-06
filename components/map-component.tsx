@@ -38,7 +38,7 @@ export default function MapComponent() {
     const fetchHeatmapData = async () => {
       try {
         const result = await apiClient.getNetworkHeatmap()
-        if (result.error) {
+        if (result.error || !Array.isArray(result.data)) {
           // Mock data for demo
           setHeatmapData([
             { lat: 40.7128, lng: -74.0060, intensity: 85, nodeCount: 120, region: "North America", avgUptime: 98.5 },
@@ -52,6 +52,14 @@ export default function MapComponent() {
         }
       } catch (error) {
         console.error("Failed to fetch heatmap data:", error)
+        // Fallback to mock data
+        setHeatmapData([
+          { lat: 40.7128, lng: -74.0060, intensity: 85, nodeCount: 120, region: "North America", avgUptime: 98.5 },
+          { lat: 51.5074, lng: -0.1278, intensity: 75, nodeCount: 85, region: "Europe", avgUptime: 96.2 },
+          { lat: 35.6762, lng: 139.6503, intensity: 65, nodeCount: 95, region: "Asia", avgUptime: 94.8 },
+          { lat: -33.8688, lng: 151.2093, intensity: 55, nodeCount: 45, region: "Australia", avgUptime: 92.1 },
+          { lat: -23.5505, lng: -46.6333, intensity: 45, nodeCount: 35, region: "South America", avgUptime: 89.7 },
+        ] as HeatmapData[])
       }
     }
 

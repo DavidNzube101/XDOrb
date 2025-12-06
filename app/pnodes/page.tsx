@@ -3,13 +3,15 @@
 import { useState } from "react"
 import useSWR from "swr"
 import Papa from "papaparse"
+import jsPDF from 'jspdf'
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { apiClient } from "@/lib/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Search, Download, FileText, FileSpreadsheet, Bookmark, Share2, ChevronLeft, ChevronRight } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Search, Download, FileText, FileSpreadsheet, Bookmark, Share2, ChevronLeft, ChevronRight, Eye } from "lucide-react"
 
 const fetcher = async () => {
   const result = await apiClient.getPNodes()
@@ -31,6 +33,7 @@ export default function PNodesPage() {
     }
     return new Set()
   })
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   const toggleBookmark = (nodeId: string) => {
     const newBookmarked = new Set(bookmarked)
@@ -57,16 +60,20 @@ export default function PNodesPage() {
     }
   }
 
-  const filtered = pnodes?.filter((node) => {
-    const matchesSearch =
-      node.name.toLowerCase().includes(search.toLowerCase()) ||
-      node.location.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus = statusFilter === "all" || node.status === statusFilter
-    const matchesRegion = regionFilter === "all" || node.region === regionFilter
-    return matchesSearch && matchesStatus && matchesRegion
-  })
+  const filtered = Array.isArray(pnodes)
+    ? pnodes.filter((node) => {
+        const matchesSearch =
+          node.name.toLowerCase().includes(search.toLowerCase()) ||
+          node.location.toLowerCase().includes(search.toLowerCase())
+        const matchesStatus = statusFilter === "all" || node.status === statusFilter
+        const matchesRegion = regionFilter === "all" || node.region === regionFilter
+        return matchesSearch && matchesStatus && matchesRegion
+      })
+    : []
 
-  const regions = Array.from(new Set(pnodes?.map(node => node.region) || []))
+  const regions = Array.isArray(pnodes)
+    ? Array.from(new Set(pnodes.map(node => node.region)))
+    : []
 
   // Pagination
   const totalPages = Math.ceil((filtered?.length || 0) / itemsPerPage)
@@ -102,29 +109,79 @@ export default function PNodesPage() {
     if (!filtered) return
 
     try {
-      const { jsPDF } = await import('jspdf')
-      await import('jspdf-autotable')
-
+      // Create PDF using jsPDF directly
       const doc = new jsPDF()
 
-      doc.text('pNodes Directory', 14, 20)
+      // Add title
+      doc.setFontSize(20)
+      doc.text('pNodes Directory', 20, 30)
 
-      const tableData = filtered.map(node => [
+      // Prepare table data
+      const headers = ['Name', 'Location', 'Status', 'Uptime', 'Latency', 'Validations', 'Rewards']
+      const data = filtered.map(node => [
         node.name,
         node.location,
         node.status,
         `${node.uptime}%`,
         `${node.latency}ms`,
-        node.validations,
-        node.rewards.toFixed(2),
+        node.validations.toString(),
+        node.rewards.toFixed(2)
       ])
 
-      ;(doc as any).autoTable({
-        head: [['Name', 'Location', 'Status', 'Uptime', 'Latency', 'Validations', 'Rewards']],
-        body: tableData,
-        startY: 30,
+      // Simple table implementation
+      let yPosition = 50
+      const pageHeight = doc.internal.pageSize.height
+      const lineHeight = 8
+      const margin = 20
+      const columnWidth = (doc.internal.pageSize.width - 2 * margin) / headers.length
+
+      // Draw headers
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      headers.forEach((header, index) => {
+        doc.text(header, margin + index * columnWidth, yPosition)
       })
 
+      yPosition += lineHeight
+
+      // Draw header line
+      doc.line(margin, yPosition - 2, doc.internal.pageSize.width - margin, yPosition - 2)
+
+      yPosition += lineHeight / 2
+
+      // Draw data rows
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(10)
+
+      data.forEach((row, rowIndex) => {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 30) {
+          doc.addPage()
+          yPosition = 30
+  }
+
+        row.forEach((cell, cellIndex) => {
+          const cellText = cell.toString()
+          // Truncate long text if needed
+          const maxChars = Math.floor((columnWidth - 4) / 2) // Rough character limit
+          const truncatedText = cellText.length > maxChars
+            ? cellText.substring(0, maxChars - 3) + '...'
+            : cellText
+
+          doc.text(truncatedText, margin + cellIndex * columnWidth, yPosition)
+        })
+
+        yPosition += lineHeight
+
+        // Add subtle row separator for alternating rows
+        if (rowIndex % 2 === 0) {
+          doc.setDrawColor(240, 240, 240)
+          doc.line(margin, yPosition - lineHeight + 2, doc.internal.pageSize.width - margin, yPosition - lineHeight + 2)
+          doc.setDrawColor(0, 0, 0)
+        }
+      })
+
+      // Save the PDF
       doc.save('pnodes-data.pdf')
     } catch (error) {
       console.error('PDF export failed:', error)
@@ -196,16 +253,68 @@ export default function PNodesPage() {
               </select>
             </div>
           </div>
-           <div className="flex gap-2">
-             <Button onClick={exportToCSV} variant="outline" size="sm" className="flex items-center gap-2">
-               <FileSpreadsheet className="w-4 h-4" />
-               CSV
-             </Button>
-             <Button onClick={exportToPDF} variant="outline" size="sm" className="flex items-center gap-2">
-               <FileText className="w-4 h-4" />
-               PDF
-             </Button>
-           </div>
+            <div className="flex gap-2">
+              <Button onClick={exportToCSV} variant="outline" size="sm" className="flex items-center gap-2">
+                <FileSpreadsheet className="w-4 h-4" />
+                CSV
+              </Button>
+              <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <Eye className="w-4 h-4" />
+                    Preview PDF
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+                  <DialogHeader className="flex-shrink-0">
+                    <DialogTitle>PDF Preview - pNodes Directory</DialogTitle>
+                    <DialogDescription>
+                      Review the data before exporting to PDF
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex-1 overflow-auto bg-white text-black p-4 rounded border min-h-0">
+                    <h1 className="text-xl font-bold mb-4 text-black">pNodes Directory</h1>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300 text-sm" id="pdf-preview-table">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Location</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Uptime</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Latency</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Validations</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Rewards</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filtered?.map((node, index) => (
+                            <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <td className="border border-gray-300 px-4 py-2">{node.name}</td>
+                              <td className="border border-gray-300 px-4 py-2">{node.location}</td>
+                              <td className="border border-gray-300 px-4 py-2">{node.status}</td>
+                              <td className="border border-gray-300 px-4 py-2">{node.uptime}%</td>
+                              <td className="border border-gray-300 px-4 py-2">{node.latency}ms</td>
+                              <td className="border border-gray-300 px-4 py-2">{node.validations}</td>
+                              <td className="border border-gray-300 px-4 py-2">{node.rewards.toFixed(2)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-4 flex-shrink-0">
+                    <Button variant="outline" onClick={() => setPreviewOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={() => { exportToPDF(); setPreviewOpen(false); }}>
+                      <Download className="w-4 h-4 mr-2" />
+                      Export PDF
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
         </div>
 
         {/* Nodes Table */}

@@ -38,10 +38,11 @@ export interface ApiResponse<T> {
 
 // In-memory cache for API responses
 const cache = new Map<string, { data: unknown; timestamp: number }>()
-const CACHE_TTL = 30000 // 30 seconds
+const CACHE_TTL = 5000 // 5 seconds for faster updates
 
-// Mock API endpoints - replace with real endpoints
-const API_BASE = "/api"
+// Backend API endpoints
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY
 
 async function fetchWithCache<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
   const cacheKey = endpoint
@@ -61,6 +62,7 @@ async function fetchWithCache<T>(endpoint: string, options?: RequestInit): Promi
       ...options,
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`,
         ...options?.headers,
       },
     })
@@ -73,12 +75,12 @@ async function fetchWithCache<T>(endpoint: string, options?: RequestInit): Promi
 
     // Cache the response
     cache.set(cacheKey, {
-      data: result,
+      data: result.data,
       timestamp: Date.now(),
     })
 
     return {
-      data: result as T,
+      data: result.data as T,
       error: null,
       timestamp: Date.now(),
     }
@@ -128,12 +130,19 @@ export const apiClient = {
     ),
 
   // Leaderboard
-  getLeaderboard: (metric: "rewards" | "uptime" | "performance" = "rewards", limit = 10) =>
-    fetchWithCache<PNodeMetrics[]>(`/leaderboard?metric=${metric}&limit=${limit}`),
+  getLeaderboard: (metric: "rewards" | "uptime" | "performance" = "rewards", limit = 10) => {
+    // Clear cache for leaderboard to force fresh fetch
+    const cacheKey = `/leaderboard?metric=${metric}&limit=${limit}`
+    cache.delete(cacheKey)
+    return fetchWithCache<PNodeMetrics[]>(cacheKey)
+  },
 
   // Network Heat Map
-  getNetworkHeatmap: () =>
-    fetchWithCache<
+  getNetworkHeatmap: () => {
+    // Clear cache for heatmap to force fresh fetch
+    const cacheKey = "/network/heatmap"
+    cache.delete(cacheKey)
+    return fetchWithCache<
       Array<{
         lat: number
         lng: number
@@ -142,7 +151,13 @@ export const apiClient = {
         region: string
         avgUptime: number
       }>
-    >("/network/heatmap"),
+    >(cacheKey)
+  },
+
+  getNetworkHistory: (timeRange: "24h" | "7d" | "30d" = "24h") =>
+    fetchWithCache<Array<{ timestamp: number; latency: number; uptime: number; storageUsed: number; rewards: number }>>(
+      `/network/history?range=${timeRange}`,
+    ),
 
   // Clear cache manually if needed
   clearCache: () => cache.clear(),

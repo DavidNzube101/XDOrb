@@ -28,6 +28,19 @@ const pnodesFetcher = async () => {
 }
 
 export default function DashboardPage() {
+  // Check if required env vars are set
+  if (!process.env.NEXT_PUBLIC_API_BASE || !process.env.NEXT_PUBLIC_API_KEY) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-foreground mb-4">XDOrb</h1>
+          <p className="text-xl text-muted-foreground">Currently in maintenance</p>
+          <p className="text-sm text-muted-foreground mt-2">Please check back later</p>
+        </div>
+      </div>
+    )
+  }
+
   const { data: stats, isLoading: statsLoading } = useSWR<DashboardStats>("/dashboard/stats", statsFetcher, {
     refreshInterval: 30000,
   })
@@ -55,7 +68,7 @@ export default function DashboardPage() {
           <div>
             <p className="text-sm font-medium text-muted-foreground">{label}</p>
             <p className="text-3xl font-bold text-foreground mt-2">
-              {value.toLocaleString()}
+              {(value || 0).toLocaleString()}
               {unit && <span className="text-lg ml-1">{unit}</span>}
             </p>
             {change !== undefined && (
