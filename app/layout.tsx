@@ -11,23 +11,18 @@ const lora = V0_Font_Lora({ subsets: ['latin'], weight: ["400","500","600","700"
 export const metadata: Metadata = {
   title: "XDOrb - Xandeum Analytics Platform",
   description: "Premium pNode Analytics & Monitoring for Xandeum Network",
-  generator: "v0.app",
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
+        url: "/Logo.png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark-32x32.png",
+        url: "/Logo.png",
         media: "(prefers-color-scheme: dark)",
       },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
     ],
-    apple: "/apple-icon.png",
+    apple: "/Logo.png",
   },
   openGraph: {
     title: "XDOrb - Xandeum Analytics Platform",
