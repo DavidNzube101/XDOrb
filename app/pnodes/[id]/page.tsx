@@ -27,6 +27,12 @@ const MapComponent = dynamic(() => import("@/components/map-component"), {
 
 const formatUptime = (seconds: number) => {
   if (!seconds) return "0s"
+  
+  // If uptime is less than a minute, show seconds with 2 decimal places
+  if (seconds < 60) {
+    return `${seconds.toFixed(2)}s`
+  }
+
   const d = Math.floor(seconds / (3600 * 24))
   const h = Math.floor((seconds % (3600 * 24)) / 3600)
   const m = Math.floor((seconds % 3600) / 60)
@@ -36,7 +42,7 @@ const formatUptime = (seconds: number) => {
   if (h > 0) parts.push(`${h}h`)
   if (m > 0) parts.push(`${m}m`)
   
-  return parts.length > 0 ? parts.join(" ") : `${seconds}s`
+  return parts.length > 0 ? parts.join(" ") : `${seconds.toFixed(2)}s`
 }
 
 export default function PNodeDetailPage() {
