@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Search, Download, FileText, FileSpreadsheet, Bookmark, Share2, ChevronLeft, ChevronRight, Eye, Info, RotateCcw, RefreshCw } from "lucide-react"
 
+import { PriceMarquee } from "@/components/price-marquee"
+
 const fetcher = async () => {
   const result = await apiClient.getPNodes()
   if (result.error) throw new Error(result.error)
@@ -235,6 +237,11 @@ export default function PNodesPage() {
                   <div>
                     <h1 className="text-3xl font-bold text-foreground">XDOrb pNodes</h1>
                     <p className="text-muted-foreground mt-1">Manage and monitor all pNodes on the Xandeum Network</p>
+                    
+                    {/* Mobile Price Marquee */}
+                    <div className="mt-4 md:hidden border border-border bg-card/50 rounded-lg p-2 h-10 flex items-center shadow-sm">
+                      <PriceMarquee />
+                    </div>
                   </div>
           {/* Search and Filters */}
           <div className="flex gap-4 flex-wrap">

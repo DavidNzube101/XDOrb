@@ -1,5 +1,6 @@
 "use client"
 
+import { PriceMarquee } from "@/components/price-marquee"
 import { useState, useRef } from "react"
 import useSWR from "swr"
 import { useParams } from "next/navigation"
@@ -142,131 +143,136 @@ export default function PNodeDetailPage() {
       <DashboardLayout>
         <div className="space-y-6 pb-20">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-                <a href="/pnodes" className="p-2 hover:bg-muted rounded-lg transition-colors">
-                <ArrowLeft className="w-5 h-5" />
-                </a>
-                <div>
-                <h1 className="text-3xl font-bold text-foreground">{node.name}</h1>
-                <p className="text-muted-foreground">{node.location}</p>
-                </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                  <a href="/pnodes" className="p-2 hover:bg-muted rounded-lg transition-colors">
+                  <ArrowLeft className="w-5 h-5" />
+                  </a>
+                  <div>
+                  <h1 className="text-3xl font-bold text-foreground">{node.name}</h1>
+                  <p className="text-muted-foreground">{node.location}</p>
+                  </div>
+              </div>
+              
+              <Dialog>
+                  <DialogTrigger asChild>
+                     <div className="inline-block">
+                       <Tooltip>
+                          <TooltipTrigger asChild>
+                              <Button variant="outline" size="icon">
+                                  <Share2 className="w-4 h-4" />
+                              </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                              <p>Share</p>
+                          </TooltipContent>
+                       </Tooltip>
+                     </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
+                      <DialogHeader className="p-6 border-b flex-shrink-0">
+                          <DialogTitle>Share Node Snapshot</DialogTitle>
+                      </DialogHeader>
+                      
+                      <div className="flex-1 overflow-y-auto p-6 bg-muted/30 flex justify-center">
+                          {/* Hidden Export Container (Visible in Modal for Preview) */}
+                          <div ref={exportRef} className="bg-background p-8 border rounded-lg shadow-sm space-y-6 text-foreground min-w-[800px] h-fit">
+                              <div className="flex items-center gap-3 mb-6 border-b pb-4">
+                                  <img src="/Logo.png" alt="XDOrb" className="h-8 w-8 rounded-full" />
+                                  <div>
+                                      <h3 className="font-bold text-lg">XDOrb Analytics</h3>
+                                      <p className="text-sm text-muted-foreground">Detailed Node Report: {node.name}</p>
+                                  </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-6">
+                                  {/* Row 1 Left: Map */}
+                                  <div className="h-64 border rounded-lg overflow-hidden relative">
+                                       <MapComponent 
+                                          center={[node.lat, node.lng]} 
+                                          zoom={5} 
+                                          highlight={{ lat: node.lat, lng: node.lng, name: node.name }} 
+                                       />
+                                       <div className="absolute top-2 left-2 bg-background/80 px-2 py-1 rounded text-xs font-semibold backdrop-blur-sm z-[1000]">
+                                          {node.location}
+                                       </div>
+                                  </div>
+                                  
+                                  {/* Row 1 Right: Metrics 2x2 */}
+                                  <div className="grid grid-cols-2 gap-4">
+                                       <div className="border p-4 rounded-lg bg-card">
+                                          <p className="text-sm text-muted-foreground mb-1">Status</p>
+                                          <div className="flex items-center gap-2">
+                                              <div className={`w-2 h-2 rounded-full ${node.status === "active" ? "bg-green-500" : "bg-red-500"}`} />
+                                              <span className="font-semibold capitalize">{node.status}</span>
+                                          </div>
+                                       </div>
+                                       <div className="border p-4 rounded-lg bg-card">
+                                          <p className="text-sm text-muted-foreground mb-1">Uptime</p>
+                                          <p className="text-xl font-bold">{node.uptime.toFixed(2)}%</p>
+                                       </div>
+                                       <div className="border p-4 rounded-lg bg-card">
+                                          <p className="text-sm text-muted-foreground mb-1">Latency</p>
+                                          <p className="text-xl font-bold">{node.latency}ms</p>
+                                       </div>
+                                       <div className="border p-4 rounded-lg bg-card">
+                                          <p className="text-sm text-muted-foreground mb-1">Rewards</p>
+                                          <p className="text-xl font-bold text-primary">{node.rewards.toFixed(2)}</p>
+                                       </div>
+                                  </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-6">
+                                   {/* Row 2 Left: Uptime Trend */}
+                                   <div className="border rounded-lg p-4 bg-card h-64">
+                                      <h4 className="font-semibold mb-2 text-sm">Uptime Trend (24h)</h4>
+                                       <ResponsiveContainer width="100%" height="100%">
+                                          <AreaChart data={history?.map(h => ({ ...h, time: '' })) || []}>
+                                              <Area type="monotone" dataKey="uptime" stroke="var(--color-secondary)" fill="var(--color-secondary)" fillOpacity={0.1} />
+                                          </AreaChart>
+                                      </ResponsiveContainer>
+                                   </div>
+                                   
+                                   {/* Row 2 Right: Node Info */}
+                                   <div className="border rounded-lg p-4 bg-card space-y-3">
+                                      <h4 className="font-semibold mb-2 text-sm">Node Details</h4>
+                                      <div className="grid grid-cols-2 gap-y-3 text-sm">
+                                          <div className="text-muted-foreground">ID</div>
+                                          <div className="font-mono text-xs truncate">{node.id}</div>
+                                          
+                                          <div className="text-muted-foreground">Performance</div>
+                                          <div className="font-semibold">{node.performance}%</div>
+                                          
+                                          <div className="text-muted-foreground">Risk Score</div>
+                                          <div className="font-semibold">{node.riskScore}%</div>
+                                          
+                                          <div className="text-muted-foreground">Stake</div>
+                                          <div>{node.stake} POL</div>
+                                      </div>
+                                   </div>
+                              </div>
+
+                              <div className="text-center pt-4 border-t text-muted-foreground text-xs font-mono">
+                                  Analytics by XDOrb • xdorb.vercel.app
+                              </div>
+                          </div>
+                      </div>
+
+                      <DialogFooter className="p-6 border-t flex-shrink-0">
+                          <Button onClick={handleDownloadPng} disabled={isExporting} className="w-full sm:w-auto">
+                              <Download className="w-4 h-4 mr-2" />
+                              {isExporting ? 'Exporting...' : 'Download PNG'}
+                          </Button>
+                      </DialogFooter>
+                  </DialogContent>
+              </Dialog>
             </div>
-            
-            <Dialog>
-                <DialogTrigger asChild>
-                   <div className="inline-block">
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon">
-                                <Share2 className="w-4 h-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Share</p>
-                        </TooltipContent>
-                     </Tooltip>
-                   </div>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
-                    <DialogHeader className="p-6 border-b flex-shrink-0">
-                        <DialogTitle>Share Node Snapshot</DialogTitle>
-                    </DialogHeader>
-                    
-                    <div className="flex-1 overflow-y-auto p-6 bg-muted/30 flex justify-center">
-                        {/* Hidden Export Container (Visible in Modal for Preview) */}
-                        <div ref={exportRef} className="bg-background p-8 border rounded-lg shadow-sm space-y-6 text-foreground min-w-[800px] h-fit">
-                            <div className="flex items-center gap-3 mb-6 border-b pb-4">
-                                <img src="/Logo.png" alt="XDOrb" className="h-8 w-8 rounded-full" />
-                                <div>
-                                    <h3 className="font-bold text-lg">XDOrb Analytics</h3>
-                                    <p className="text-sm text-muted-foreground">Detailed Node Report: {node.name}</p>
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-6">
-                                {/* Row 1 Left: Map */}
-                                <div className="h-64 border rounded-lg overflow-hidden relative">
-                                     <MapComponent 
-                                        center={[node.lat, node.lng]} 
-                                        zoom={5} 
-                                        highlight={{ lat: node.lat, lng: node.lng, name: node.name }} 
-                                     />
-                                     <div className="absolute top-2 left-2 bg-background/80 px-2 py-1 rounded text-xs font-semibold backdrop-blur-sm z-[1000]">
-                                        {node.location}
-                                     </div>
-                                </div>
-                                
-                                {/* Row 1 Right: Metrics 2x2 */}
-                                <div className="grid grid-cols-2 gap-4">
-                                     <div className="border p-4 rounded-lg bg-card">
-                                        <p className="text-sm text-muted-foreground mb-1">Status</p>
-                                        <div className="flex items-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full ${node.status === "active" ? "bg-green-500" : "bg-red-500"}`} />
-                                            <span className="font-semibold capitalize">{node.status}</span>
-                                        </div>
-                                     </div>
-                                     <div className="border p-4 rounded-lg bg-card">
-                                        <p className="text-sm text-muted-foreground mb-1">Uptime</p>
-                                        <p className="text-xl font-bold">{node.uptime.toFixed(2)}%</p>
-                                     </div>
-                                     <div className="border p-4 rounded-lg bg-card">
-                                        <p className="text-sm text-muted-foreground mb-1">Latency</p>
-                                        <p className="text-xl font-bold">{node.latency}ms</p>
-                                     </div>
-                                     <div className="border p-4 rounded-lg bg-card">
-                                        <p className="text-sm text-muted-foreground mb-1">Rewards</p>
-                                        <p className="text-xl font-bold text-primary">{node.rewards.toFixed(2)}</p>
-                                     </div>
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-6">
-                                 {/* Row 2 Left: Uptime Trend */}
-                                 <div className="border rounded-lg p-4 bg-card h-64">
-                                    <h4 className="font-semibold mb-2 text-sm">Uptime Trend (24h)</h4>
-                                     <ResponsiveContainer width="100%" height="100%">
-                                        <AreaChart data={history?.map(h => ({ ...h, time: '' })) || []}>
-                                            <Area type="monotone" dataKey="uptime" stroke="var(--color-secondary)" fill="var(--color-secondary)" fillOpacity={0.1} />
-                                        </AreaChart>
-                                    </ResponsiveContainer>
-                                 </div>
-                                 
-                                 {/* Row 2 Right: Node Info */}
-                                 <div className="border rounded-lg p-4 bg-card space-y-3">
-                                    <h4 className="font-semibold mb-2 text-sm">Node Details</h4>
-                                    <div className="grid grid-cols-2 gap-y-3 text-sm">
-                                        <div className="text-muted-foreground">ID</div>
-                                        <div className="font-mono text-xs truncate">{node.id}</div>
-                                        
-                                        <div className="text-muted-foreground">Performance</div>
-                                        <div className="font-semibold">{node.performance}%</div>
-                                        
-                                        <div className="text-muted-foreground">Risk Score</div>
-                                        <div className="font-semibold">{node.riskScore}%</div>
-                                        
-                                        <div className="text-muted-foreground">Stake</div>
-                                        <div>{node.stake} POL</div>
-                                    </div>
-                                 </div>
-                            </div>
-
-                            <div className="text-center pt-4 border-t text-muted-foreground text-xs font-mono">
-                                Analytics by XDOrb • xdorb.vercel.app
-                            </div>
-                        </div>
-                    </div>
-
-                    <DialogFooter className="p-6 border-t flex-shrink-0">
-                        <Button onClick={handleDownloadPng} disabled={isExporting} className="w-full sm:w-auto">
-                            <Download className="w-4 h-4 mr-2" />
-                            {isExporting ? 'Exporting...' : 'Download PNG'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            {/* Mobile Price Marquee */}
+            <div className="md:hidden border border-border bg-card/50 rounded-lg p-2 h-10 flex items-center shadow-sm">
+              <PriceMarquee />
+            </div>
           </div>
-
           {/* 
             Desktop Layout:
             Row 1: Map (Left) | Metrics (2x2) (Right)

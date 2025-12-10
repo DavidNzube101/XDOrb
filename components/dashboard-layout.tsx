@@ -30,6 +30,8 @@ import {
   Bookmark
 } from "lucide-react"
 
+import { PriceMarquee } from "@/components/price-marquee"
+
 interface DashboardLayoutProps {
   children: ReactNode
 }
@@ -246,9 +248,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <Footer />
       </div>
 
-      {/* Desktop Footer: Floating Fixed Widget */}
-      <div className="fixed bottom-6 left-28 right-6 z-30 hidden md:flex justify-end pointer-events-none">
-        <div className="bg-background/60 backdrop-blur-md border border-border px-6 py-3 shadow-lg rounded-none pointer-events-auto">
+      {/* Desktop Bottom Bar: Marquee (Left) & Footer (Right) */}
+      <div className="fixed bottom-6 left-28 right-6 z-30 hidden md:flex justify-between pointer-events-none gap-4">
+        {/* Left: Price Marquee */}
+        <div className="bg-background/60 backdrop-blur-md border border-border px-6 py-3 shadow-lg rounded-none pointer-events-auto h-[58px] flex items-center w-full max-w-[500px] overflow-hidden">
+             <PriceMarquee />
+        </div>
+
+        {/* Right: Footer Content */}
+        <div className="bg-background/60 backdrop-blur-md border border-border px-6 py-3 shadow-lg rounded-none pointer-events-auto flex items-center">
           <FooterContent />
         </div>
       </div>
