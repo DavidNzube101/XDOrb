@@ -131,7 +131,7 @@ export default function DashboardPage() {
         <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bot className="w-5 h-5 text-primary" />
+              <img src="https://img.icons8.com/?size=100&id=oWiuH0jFiU0R&format=png&color=000000" alt="Telegram Bot" className="w-[30px] h-[30px]" />
               XDOrb Telegram Bot
             </CardTitle>
             <CardDescription>Your personal assistant for Xandeum pNode analytics</CardDescription>

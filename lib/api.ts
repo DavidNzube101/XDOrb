@@ -104,6 +104,8 @@ export const apiClient = {
   getPNodes: (filters?: { status?: string; location?: string }) =>
     fetchWithCache<PNodeMetrics[]>(`/pnodes?${new URLSearchParams(filters as Record<string, string>).toString()}`),
 
+  refreshData: () => fetchWithCache<PNodeMetrics[]>("/pnodes/refresh", { method: "POST" }),
+
   getPNodeById: (id: string) => fetchWithCache<PNodeMetrics>(`/pnodes/${id}`),
 
   updatePNode: (id: string, data: Partial<PNodeMetrics>) =>

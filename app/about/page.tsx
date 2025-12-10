@@ -125,7 +125,7 @@ export default function AboutPage() {
         <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bot className="w-5 h-5 text-primary" />
+              <img src="https://img.icons8.com/?size=100&id=oWiuH0jFiU0R&format=png&color=000000" alt="Telegram Bot" className="w-[30px] h-[30px]" />
               XDOrb Telegram Bot
             </CardTitle>
             <CardDescription>Your personal assistant for Xandeum pNode analytics</CardDescription>
@@ -179,9 +179,9 @@ export default function AboutPage() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors group"
               >
-                <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg group-hover:bg-red-200 dark:group-hover:bg-red-900/30 transition-colors">
-                   <Package className="w-6 h-6 text-red-600 dark:text-red-400" />
-                </div>
+                 <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg group-hover:bg-red-200 dark:group-hover:bg-red-900/30 transition-colors">
+                    <img src="https://img.icons8.com/?size=100&id=HcQEdKCkXUs3&format=png&color=000000" alt="JavaScript/TypeScript" className="w-[30px] h-[30px]" />
+                 </div>
                 <div>
                   <div className="font-medium">JS/TS Client</div>
                   <div className="text-xs text-muted-foreground">NPM Package</div>
@@ -195,9 +195,9 @@ export default function AboutPage() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors group"
               >
-                <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg group-hover:bg-orange-200 dark:group-hover:bg-orange-900/30 transition-colors">
-                   <Code className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                </div>
+                 <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg group-hover:bg-orange-200 dark:group-hover:bg-orange-900/30 transition-colors">
+                    <img src="https://img.icons8.com/?size=100&id=AeV543ttZrcT&format=png&color=000000" alt="Rust" className="w-[30px] h-[30px]" />
+                 </div>
                 <div>
                   <div className="font-medium">Rust Client</div>
                   <div className="text-xs text-muted-foreground">Crates.io</div>
@@ -211,9 +211,9 @@ export default function AboutPage() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors group"
               >
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/30 transition-colors">
-                   <Terminal className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
+                 <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/30 transition-colors">
+                    <img src="https://img.icons8.com/?size=100&id=44442&format=png&color=000000" alt="Go" className="w-[30px] h-[30px]" />
+                 </div>
                 <div>
                   <div className="font-medium">Go Client</div>
                   <div className="text-xs text-muted-foreground">GitHub Repository</div>

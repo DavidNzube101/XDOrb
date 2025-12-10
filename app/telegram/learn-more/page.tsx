@@ -25,9 +25,9 @@ export default function TelegramLearnMorePage() {
       <div className="space-y-6">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="p-4 bg-primary/10 rounded-full">
-              <Bot className="w-12 h-12 text-primary" />
-            </div>
+             <div className="p-4 bg-primary/10 rounded-full">
+               <img src="https://img.icons8.com/?size=100&id=oWiuH0jFiU0R&format=png&color=000000" alt="Telegram Bot" className="w-[30px] h-[30px]" />
+             </div>
           </div>
           <div>
             <h1 className="text-3xl font-bold text-foreground">XDOrb Telegram Bot</h1>

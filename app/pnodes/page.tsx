@@ -23,6 +23,29 @@ const fetcher = async () => {
 export default function PNodesPage() {
   const { data: pnodes, isLoading, mutate } = useSWR("/pnodes", fetcher, { refreshInterval: 30000 })
   const fetchPNodes = () => mutate()
+
+  const handleReload = async () => {
+    setReloading(true)
+    try {
+      const result = await apiClient.refreshData()
+      if (result.error) {
+        console.error("Reload failed:", result.error)
+        // Could add toast notification here
+      } else {
+        // Update SWR cache with fresh data
+        mutate(result.data, false)
+        // Reset filters and search
+        setStatusFilter("all")
+        setRegionFilter("all")
+        setSearch("")
+        setCurrentPage(1)
+      }
+    } catch (error) {
+      console.error("Reload error:", error)
+    } finally {
+      setReloading(false)
+    }
+  }
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive" | "warning">("all")
   const [regionFilter, setRegionFilter] = useState<string>("all")
@@ -35,7 +58,8 @@ export default function PNodesPage() {
     }
     return new Set()
   })
-  const [previewOpen, setPreviewOpen] = useState(false)
+   const [previewOpen, setPreviewOpen] = useState(false)
+   const [reloading, setReloading] = useState(false)
 
   const toggleBookmark = (nodeId: string) => {
     const newBookmarked = new Set(bookmarked)
@@ -321,20 +345,36 @@ export default function PNodesPage() {
 
           {/* Nodes Table */}
           <Card className="border-border bg-card">
-            <CardHeader>
-              <CardTitle>Active Nodes</CardTitle>
-              <CardDescription>{filtered?.length || 0} nodes found</CardDescription>
-              <div className="flex gap-2 mt-2">
-                <Button variant="outline" size="sm" onClick={() => {
-                  setStatusFilter("all")
-                  setRegionFilter("all")
-                  setSearch("")
-                  setCurrentPage(1)
-                }}>
-                  Clear Filters
-                </Button>
-              </div>
-            </CardHeader>
+             <CardHeader>
+               <div className="flex items-center justify-between">
+                 <div>
+                   <CardTitle>Active Nodes</CardTitle>
+                   <CardDescription>{filtered?.length || 0} nodes found</CardDescription>
+                 </div>
+                 <div className="flex gap-2">
+                   <Button
+                     variant="outline"
+                     size="sm"
+                     onClick={handleReload}
+                     disabled={reloading}
+                     className="gap-2 bg-[#116b61] text-white hover:bg-[#116b61]/90"
+                   >
+                     <RefreshCw className={`w-4 h-4 ${reloading ? 'animate-spin' : ''}`} />
+                     <span className="hidden sm:inline">
+                       {reloading ? 'Reloading...' : 'Pull Fresh Data'}
+                     </span>
+                   </Button>
+                   <Button variant="outline" size="sm" onClick={() => {
+                     setStatusFilter("all")
+                     setRegionFilter("all")
+                     setSearch("")
+                     setCurrentPage(1)
+                   }}>
+                     Clear Filters
+                   </Button>
+                 </div>
+               </div>
+             </CardHeader>
             <CardContent>
               {isLoading ? (
                 <div className="space-y-3">
