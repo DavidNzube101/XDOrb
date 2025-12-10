@@ -10,8 +10,10 @@ import { DashboardLayout } from "@/components/dashboard-layout"
 import { apiClient, aiClient } from "@/lib/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts"
-import { ArrowLeft, Copy, HelpCircle, Brain, Sparkles, Share2, Download } from "lucide-react"
+import { ArrowLeft, Copy, HelpCircle, Brain, Sparkles, Share2, Download, AlertCircle } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Typewriter } from "@/components/typewriter"
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
@@ -23,9 +25,24 @@ const MapComponent = dynamic(() => import("@/components/map-component"), {
   loading: () => <div className="h-96 w-full bg-muted rounded-lg animate-pulse" />
 })
 
+const formatUptime = (seconds: number) => {
+  if (!seconds) return "0s"
+  const d = Math.floor(seconds / (3600 * 24))
+  const h = Math.floor((seconds % (3600 * 24)) / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  
+  const parts = []
+  if (d > 0) parts.push(`${d}d`)
+  if (h > 0) parts.push(`${h}h`)
+  if (m > 0) parts.push(`${m}m`)
+  
+  return parts.length > 0 ? parts.join(" ") : `${seconds}s`
+}
+
 export default function PNodeDetailPage() {
   const params = useParams()
   const id = params.id as string
+  const [showSimulated, setShowSimulated] = useState(true)
 
   const { data: node, isLoading } = useSWR(
     `/pnodes/${id}`,
@@ -38,9 +55,9 @@ export default function PNodeDetailPage() {
   )
 
   const { data: history } = useSWR(
-    `/pnodes/${id}/history?range=24h`,
+    `/pnodes/${id}/history?range=24h&simulated=${showSimulated}`,
     async () => {
-      const result = await apiClient.getPNodeHistory(id, '24h')
+      const result = await apiClient.getPNodeHistory(id, '24h', showSimulated)
       if (result.error) throw new Error(result.error)
       return result.data
     },
@@ -61,10 +78,10 @@ export default function PNodeDetailPage() {
     // Generate mock analysis based on node stats
     const analysis = `Based on the comprehensive scan of Node ${node?.id.slice(0, 8)}...:
 
-• Performance Status: ${node?.performance && node.performance > 90 ? 'Excellent' : 'Stable'}. The node maintains a ${node?.uptime.toFixed(2)}% uptime, placing it in the top percentile of network reliability.
+• Performance Status: ${node?.performance && node.performance > 90 ? 'Excellent' : 'Stable'}. The node maintains a ${formatUptime(node?.uptime || 0)} uptime session.
 • Latency Metrics: Current latency of ${node?.latency}ms is ${node?.latency && node.latency < 50 ? 'optimal for real-time transactions' : 'within acceptable parameters'}.
-• Economic Health: With ${node?.stake} POL staked and consistent reward generation (${node?.rewards.toFixed(2)}), this validator demonstrates strong economic alignment.
-• Risk Assessment: Calculated risk score is ${node?.riskScore}%. No immediate security threats detected. Recommended action: Continue monitoring latency spikes during peak network hours.`
+• Economic Health: With ${node?.stake || 0} POL staked and consistent reward generation (${node?.rewards ? node.rewards.toFixed(2) : 'N/A'}), this validator demonstrates strong economic alignment.
+• Risk Assessment: Calculated risk score is ${node?.riskScore || 0}%. No immediate security threats detected. Recommended action: Continue monitoring latency spikes during peak network hours.`
     
     setAnalysisResult(analysis)
     setAnalyzing(false)
@@ -211,7 +228,7 @@ export default function PNodeDetailPage() {
                                        </div>
                                        <div className="border p-4 rounded-lg bg-card">
                                           <p className="text-sm text-muted-foreground mb-1">Uptime</p>
-                                          <p className="text-xl font-bold">{node.uptime.toFixed(2)}%</p>
+                                          <p className="text-xl font-bold">{formatUptime(node.uptime)}</p>
                                        </div>
                                        <div className="border p-4 rounded-lg bg-card">
                                           <p className="text-sm text-muted-foreground mb-1">Latency</p>
@@ -219,7 +236,7 @@ export default function PNodeDetailPage() {
                                        </div>
                                        <div className="border p-4 rounded-lg bg-card">
                                           <p className="text-sm text-muted-foreground mb-1">Rewards</p>
-                                          <p className="text-xl font-bold text-primary">{node.rewards.toFixed(2)}</p>
+                                          <p className="text-xl font-bold text-primary">{node.rewards ? node.rewards.toFixed(2) : '-'}</p>
                                        </div>
                                   </div>
                               </div>
@@ -243,13 +260,13 @@ export default function PNodeDetailPage() {
                                           <div className="font-mono text-xs truncate">{node.id}</div>
                                           
                                           <div className="text-muted-foreground">Performance</div>
-                                          <div className="font-semibold">{node.performance}%</div>
+                                          <div className="font-semibold">{node.performance ? `${node.performance}%` : '-'}</div>
                                           
                                           <div className="text-muted-foreground">Risk Score</div>
-                                          <div className="font-semibold">{node.riskScore}%</div>
+                                          <div className="font-semibold">{node.riskScore ? `${node.riskScore}%` : '-'}</div>
                                           
                                           <div className="text-muted-foreground">Stake</div>
-                                          <div>{node.stake} POL</div>
+                                          <div>{node.stake ? `${node.stake} POL` : '-'}</div>
                                       </div>
                                    </div>
                               </div>
@@ -323,8 +340,8 @@ export default function PNodeDetailPage() {
 
                 <Card className="border-border bg-card flex flex-col justify-center">
                   <CardContent className="pt-6">
-                    <p className="text-sm text-muted-foreground mb-2">Uptime</p>
-                    <p className="text-2xl font-bold text-foreground">{node.uptime.toFixed(2)}%</p>
+                    <p className="text-sm text-muted-foreground mb-2">Session Uptime</p>
+                    <p className="text-2xl font-bold text-foreground">{formatUptime(node.uptime)}</p>
                   </CardContent>
                 </Card>
 
@@ -338,7 +355,7 @@ export default function PNodeDetailPage() {
                 <Card className="border-border bg-card flex flex-col justify-center">
                   <CardContent className="pt-6">
                     <p className="text-sm text-muted-foreground mb-2">Total Rewards</p>
-                    <p className="text-2xl font-bold text-primary">{node.rewards.toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-primary">{node.rewards ? node.rewards.toFixed(2) : '-'}</p>
                   </CardContent>
                 </Card>
             </div>
@@ -416,19 +433,19 @@ export default function PNodeDetailPage() {
 
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">Performance Score</p>
-                          <p className="text-2xl font-bold text-primary">{node.performance}%</p>
+                          <p className="text-2xl font-bold text-primary">{node.performance ? `${node.performance}%` : '-'}</p>
                         </div>
                       </div>
 
                       <div className="space-y-4">
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">Validations</p>
-                          <p className="text-2xl font-bold text-foreground">{node.validations}</p>
+                          <p className="text-2xl font-bold text-foreground">{node.validations || '-'}</p>
                         </div>
 
                         <div>
                           <p className="text-sm text-muted-foreground mb-1">Stake</p>
-                          <p className="text-foreground">{node.stake} POL</p>
+                          <p className="text-foreground">{node.stake ? `${node.stake} POL` : '-'}</p>
                         </div>
 
                         <div>
@@ -437,12 +454,12 @@ export default function PNodeDetailPage() {
                             <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
                               <div
                                 className={`h-full rounded-full transition-all duration-500 ${
-                                  node.riskScore < 30 ? "bg-green-500" : node.riskScore < 70 ? "bg-primary" : "bg-red-500"
+                                  (node.riskScore || 0) < 30 ? "bg-green-500" : (node.riskScore || 0) < 70 ? "bg-primary" : "bg-red-500"
                                 }`}
-                                style={{ width: `${node.riskScore}%` }}
+                                style={{ width: `${node.riskScore || 0}%` }}
                               />
                             </div>
-                            <span className="text-sm font-semibold">{node.riskScore}%</span>
+                            <span className="text-sm font-semibold">{node.riskScore || '-'}%</span>
                           </div>
                         </div>
                       </div>
@@ -455,20 +472,35 @@ export default function PNodeDetailPage() {
             <div className="lg:order-5 order-4">
                 <Card className="border-border bg-card">
                   <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <CardTitle>Latency Trend</CardTitle>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">Shows the round-trip time (ms) for the node to respond to pRPC calls over the last 24 hours. Lower is better.</p>
-                        </TooltipContent>
-                      </Tooltip>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CardTitle>Latency Trend</CardTitle>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">Shows the round-trip time (ms) for the node to respond to pRPC calls over the last 24 hours. Lower is better.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch id="simulated-latency" checked={showSimulated} onCheckedChange={setShowSimulated} />
+                        <Label htmlFor="simulated-latency" className="text-xs font-normal text-muted-foreground">Simulated Data</Label>
+                      </div>
                     </div>
                     <CardDescription>Last 24 hours</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="relative">
+                    {(!history || history.length === 0) && !showSimulated ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10">
+                        <div className="flex flex-col items-center text-center p-4">
+                          <AlertCircle className="w-8 h-8 text-muted-foreground mb-2" />
+                          <p className="text-sm font-medium">Data Unavailable</p>
+                          <p className="text-xs text-muted-foreground">Real-time history tracking coming soon.</p>
+                        </div>
+                      </div>
+                    ) : null}
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={history?.map(h => ({
                         ...h,
@@ -498,20 +530,35 @@ export default function PNodeDetailPage() {
             <div className="lg:order-6 order-6">
                 <Card className="border-border bg-card">
                   <CardHeader>
-                    <div className="flex items-center gap-2">
-                       <CardTitle>Uptime Trend</CardTitle>
-                       <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">Tracks the percentage of time the node was online and responsive during the selected period. 100% is ideal.</p>
-                        </TooltipContent>
-                      </Tooltip>
+                    <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-2">
+                         <CardTitle>Uptime Trend</CardTitle>
+                         <Tooltip>
+                          <TooltipTrigger>
+                            <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs">Tracks the percentage of time the node was online and responsive during the selected period. 100% is ideal.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                       </div>
+                       <div className="flex items-center gap-2">
+                        <Switch id="simulated-uptime" checked={showSimulated} onCheckedChange={setShowSimulated} />
+                        <Label htmlFor="simulated-uptime" className="text-xs font-normal text-muted-foreground">Simulated Data</Label>
+                      </div>
                     </div>
                     <CardDescription>Last 24 hours</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="relative">
+                    {(!history || history.length === 0) && !showSimulated ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-10">
+                        <div className="flex flex-col items-center text-center p-4">
+                          <AlertCircle className="w-8 h-8 text-muted-foreground mb-2" />
+                          <p className="text-sm font-medium">Data Unavailable</p>
+                          <p className="text-xs text-muted-foreground">Real-time history tracking coming soon.</p>
+                        </div>
+                      </div>
+                    ) : null}
                     <ResponsiveContainer width="100%" height={300}>
                       <AreaChart data={history?.map(h => ({
                         ...h,

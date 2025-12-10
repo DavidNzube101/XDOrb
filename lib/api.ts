@@ -115,9 +115,9 @@ export const apiClient = {
     }),
 
   // Metrics History
-  getPNodeHistory: (id: string, timeRange: "24h" | "7d" | "30d" = "24h") =>
+  getPNodeHistory: (id: string, timeRange: "24h" | "7d" | "30d" = "24h", simulated = false) =>
     fetchWithCache<Array<{ timestamp: number; latency: number; uptime: number; storageUsed: number; rewards: number }>>(
-      `/pnodes/${id}/history?range=${timeRange}`,
+      `/pnodes/${id}/history?range=${timeRange}&simulated=${simulated}`,
     ),
 
   // Peer Connections
