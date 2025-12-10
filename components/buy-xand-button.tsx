@@ -215,10 +215,10 @@ export function BuyXandButton() {
       </Button>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className={`sm:max-w-[425px] transition-all duration-500 ${connected ? 'animate-shimmer-border border-2' : ''}`}>
+        <DialogContent className={`sm:max-w-[425px] transition-all duration-500 bg-black ${connected ? 'animate-shimmer-border border-2' : ''}`}>
           <DialogHeader>
             <DialogTitle>Buy XAND</DialogTitle>
-            <DialogDescription>Swap tokens for XAND via Jupiter Aggregator.</DialogDescription>
+            <DialogDescription>Buy XAND directly in XDOrb. Powered by Jupiter</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="flex items-center justify-between text-sm">

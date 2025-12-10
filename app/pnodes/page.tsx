@@ -235,7 +235,7 @@ export default function PNodesPage() {
         <div className="space-y-6">
                   <div>
                     <h1 className="text-3xl font-bold text-foreground">pNodes</h1>
-                    <p className="text-muted-foreground mt-1">Manage and monitor all pNodes on the Xandeum Network</p>
+                    <p className="text-muted-foreground mt-1">Monitor pNodes on the Xandeum Network</p>
                     
                     {/* Mobile Price Marquee & Buy Button */}
                     <div className="mt-4 md:hidden flex gap-2 items-center">
