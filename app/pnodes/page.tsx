@@ -26,7 +26,11 @@ const fetcher = async () => {
 }
 
 export default function PNodesPage() {
-  const { data: pnodes, isLoading, mutate } = useSWR("/pnodes", fetcher, { refreshInterval: 30000 })
+  const { data: pnodes, isLoading, mutate } = useSWR("/pnodes", fetcher, { 
+    refreshInterval: 30000,
+    revalidateOnMount: true,
+    dedupingInterval: 5000
+  })
   const fetchPNodes = () => mutate()
 
   const [search, setSearch] = useState("")

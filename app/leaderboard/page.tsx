@@ -81,7 +81,7 @@ export default function LeaderboardPage() {
   const { data: topNodes, isLoading } = useSWR("/leaderboard", fetcher, {
     refreshInterval: 60000,
     revalidateOnMount: true,
-    dedupingInterval: 0
+    dedupingInterval: 5000
   })
 
   const getMedalIcon = (position: number) => {
