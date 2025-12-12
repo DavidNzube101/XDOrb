@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import useSWR from "swr"
 import Papa from "papaparse"
 import jsPDF from 'jspdf'
@@ -15,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Search, Download, FileText, FileSpreadsheet, Bookmark, Share2, ChevronLeft, ChevronRight, Eye, Info, RotateCcw, RefreshCw, Filter, Skull } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import Image from "next/image"
 
 import { PriceMarquee } from "@/components/price-marquee"
 import { BuyXandButton } from "@/components/buy-xand-button"
@@ -25,12 +26,87 @@ const fetcher = async () => {
   return result.data
 }
 
+// Loading screen component
+function LoadingScreen({ onServiceReady }: { onServiceReady: () => void }) {
+  const [isChecking, setIsChecking] = useState(true)
+
+  useEffect(() => {
+    const checkService = async () => {
+      try {
+        // Ping the leaderboard endpoint until we get a 200
+        const response = await fetch('/api/leaderboard')
+        if (response.ok) {
+          setIsChecking(false)
+          setTimeout(onServiceReady, 500) // Small delay for smooth transition
+        } else {
+          // Keep checking every 2 seconds
+          setTimeout(checkService, 2000)
+        }
+      } catch (error) {
+        // Keep checking on error
+        setTimeout(checkService, 2000)
+      }
+    }
+
+    checkService()
+  }, [onServiceReady])
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
+      {/* Falling blocks animation */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-3 h-3 bg-primary/30 rounded-sm animate-fall"
+            style={{
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${3 + Math.random() * 2}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="text-center space-y-6 p-8 relative z-10">
+        <div className="flex justify-center mb-8">
+          <Image
+            src="/Logo.png"
+            alt="XDOrb Logo"
+            width={200}
+            height={200}
+            className="rounded-[50pc] animate-[spin_3s_linear_infinite]"
+          />
+        </div>
+        <h1 className="text-4xl font-bold text-foreground">Checking Core Services</h1>
+        <p className="text-xl text-muted-foreground max-w-md mx-auto">
+          {isChecking
+            ? "Waking up the backend services... This might take a moment on our free tier hosting."
+            : "Services are ready! Loading your pNodes..."
+          }
+        </p>
+        <div className="flex items-center justify-center space-x-2">
+          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+          <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function PNodesPage() {
-  const { data: pnodes, isLoading, mutate } = useSWR("/pnodes", fetcher, { 
-    refreshInterval: 30000,
-    revalidateOnMount: true,
-    dedupingInterval: 5000
-  })
+  const [servicesReady, setServicesReady] = useState(false)
+
+  const { data: pnodes, isLoading, mutate } = useSWR(
+    servicesReady ? "/pnodes" : null,
+    fetcher,
+    {
+      refreshInterval: 30000,
+      revalidateOnMount: true,
+      dedupingInterval: 5000
+    }
+  )
   const fetchPNodes = () => mutate()
 
   const [search, setSearch] = useState("")
@@ -49,6 +125,11 @@ export default function PNodesPage() {
    const [previewOpen, setPreviewOpen] = useState(false)
    const [filterOpen, setFilterOpen] = useState(false)
    const [reloading, setReloading] = useState(false)
+
+  // Show loading screen until services are ready
+  if (!servicesReady) {
+    return <LoadingScreen onServiceReady={() => setServicesReady(true)} />
+  }
 
   const handleReload = async () => {
     setReloading(true)
