@@ -20,6 +20,7 @@ export interface PNodeMetrics {
   stake: number
   riskScore: number
   xdnScore: number
+  registered?: boolean
 }
 
 export interface DashboardStats {
@@ -98,6 +99,8 @@ export const apiClient = {
   refreshData: () => fetchFromApi<PNodeMetrics[]>("/pnodes/refresh", { method: "POST" }),
 
   getPNodeById: (id: string) => fetchFromApi<PNodeMetrics>(`/pnodes/${id}`),
+
+  checkPNodeRegistered: (id: string) => fetchFromApi<{ registered: boolean }>(`/pnodes/${id}/registered`),
 
   updatePNode: (id: string, data: Partial<PNodeMetrics>) =>
     fetchFromApi<PNodeMetrics>(`/pnodes/${id}`, {

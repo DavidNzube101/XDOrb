@@ -9,6 +9,7 @@ import dynamic from "next/dynamic"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { apiClient, aiClient } from "@/lib/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -53,9 +54,17 @@ export default function PNodeDetailPage() {
   const { data: node, isLoading } = useSWR(
     `/pnodes/${id}`,
     async () => {
-      const result = await apiClient.getPNodeById(id)
-      if (result.error) throw new Error(result.error)
-      return result.data
+      const [nodeResult, regResult] = await Promise.all([
+        apiClient.getPNodeById(id),
+        apiClient.checkPNodeRegistered(id).catch(() => ({ data: { registered: false } }))
+      ])
+
+      if (nodeResult.error) throw new Error(nodeResult.error)
+
+      return {
+        ...nodeResult.data,
+        registered: regResult.data?.registered || false
+      }
     },
     { refreshInterval: 30000 },
   )
@@ -173,10 +182,17 @@ export default function PNodeDetailPage() {
                   <a href="/pnodes" className="p-2 hover:bg-muted rounded-lg transition-colors">
                   <ArrowLeft className="w-5 h-5" />
                   </a>
-                  <div>
-                  <h1 className="text-3xl font-bold text-foreground">{node.name}</h1>
-                  <p className="text-muted-foreground">{node.location}</p>
-                  </div>
+                   <div>
+                     <div className="flex items-center gap-2">
+                       <h1 className="text-3xl font-bold text-foreground">{node.name}</h1>
+                       {node.registered && (
+                         <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                           Registered
+                         </Badge>
+                       )}
+                     </div>
+                     <p className="text-muted-foreground">{node.location}</p>
+                   </div>
               </div>
               
               <Dialog>

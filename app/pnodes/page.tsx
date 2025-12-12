@@ -22,7 +22,21 @@ import { BuyXandButton } from "@/components/buy-xand-button"
 const fetcher = async () => {
   const result = await apiClient.getPNodes()
   if (result.error) throw new Error(result.error)
-  return result.data
+
+  // Check registration status for each pNode
+  const pnodesWithRegistration = await Promise.all(
+    result.data.map(async (pnode: any) => {
+      try {
+        const regResult = await apiClient.checkPNodeRegistered(pnode.id)
+        return { ...pnode, registered: regResult.data?.registered || false }
+      } catch (error) {
+        console.warn(`Failed to check registration for pNode ${pnode.id}:`, error)
+        return { ...pnode, registered: false }
+      }
+    })
+  )
+
+  return pnodesWithRegistration
 }
 
 export default function PNodesPage() {
@@ -495,29 +509,36 @@ export default function PNodesPage() {
                             }}
                             aria-label={`pNode ${node.name}, status ${node.status}, uptime ${node.uptime}%`}
                           >
-                            <td className="p-3 font-medium text-foreground" role="cell">
-                                <div className="flex flex-col">
-                                    <span>{node.name}</span>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Badge variant="secondary" className="w-fit text-[10px] px-1 h-5 cursor-help mt-1 font-mono">
-                                                XDN: {node.xdnScore ? node.xdnScore.toFixed(0) : 'N/A'}
-                                            </Badge>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="right" className="max-w-xs">
-                                            <div className="space-y-2 p-1">
-                                                <p className="font-semibold text-xs border-b pb-1 mb-1">XDN Score Formula</p>
-                                                <ul className="text-[10px] space-y-1 text-muted-foreground">
-                                                    <li className="flex justify-between"><span>Stake:</span> <span>40%</span></li>
-                                                    <li className="flex justify-between"><span>Uptime:</span> <span>30%</span></li>
-                                                    <li className="flex justify-between"><span>Latency:</span> <span>20%</span></li>
-                                                    <li className="flex justify-between"><span>Risk Score:</span> <span>10%</span></li>
-                                                </ul>
-                                            </div>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </div>
-                            </td>
+                             <td className="p-3 font-medium text-foreground" role="cell">
+                                 <div className="flex flex-col">
+                                     <div className="flex items-center gap-2">
+                                         <span>{node.name}</span>
+                                         {node.registered && (
+                                           <Badge variant="default" className="text-[10px] px-1 h-5 bg-green-600 hover:bg-green-700">
+                                             Registered
+                                           </Badge>
+                                         )}
+                                     </div>
+                                     <Tooltip>
+                                         <TooltipTrigger asChild>
+                                             <Badge variant="secondary" className="w-fit text-[10px] px-1 h-5 cursor-help mt-1 font-mono">
+                                                 XDN: {node.xdnScore ? node.xdnScore.toFixed(0) : 'N/A'}
+                                             </Badge>
+                                         </TooltipTrigger>
+                                         <TooltipContent side="right" className="max-w-xs">
+                                             <div className="space-y-2 p-1">
+                                                 <p className="font-semibold text-xs border-b pb-1 mb-1">XDN Score Formula</p>
+                                                 <ul className="text-[10px] space-y-1 text-muted-foreground">
+                                                     <li className="flex justify-between"><span>Stake:</span> <span>40%</span></li>
+                                                     <li className="flex justify-between"><span>Uptime:</span> <span>30%</span></li>
+                                                     <li className="flex justify-between"><span>Latency:</span> <span>20%</span></li>
+                                                     <li className="flex justify-between"><span>Risk Score:</span> <span>10%</span></li>
+                                                 </ul>
+                                             </div>
+                                         </TooltipContent>
+                                     </Tooltip>
+                                 </div>
+                             </td>
                             <td className="p-3 text-muted-foreground" role="cell">{node.location}</td>
                             <td className="p-3" role="cell">
                               <Badge className={statusBadgeVariant(node.status)}>
