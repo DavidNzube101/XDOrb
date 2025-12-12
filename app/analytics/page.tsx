@@ -128,35 +128,35 @@ export default function AnalyticsPage() {
             <CardDescription>AI-generated network analysis</CardDescription>
           </CardHeader>
           <CardContent>
-            {hasData ? (
-              <div className="space-y-4">
-                <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
-                  <p className="font-semibold text-foreground mb-1">Peak Performance</p>
-                  <p className="text-sm text-foreground">
-                    Network validated {showSimulated ? "12,500" : "-"} transactions in March with 23% higher throughput than average.
-                  </p>
-                </div>
-                <div className="p-4 bg-secondary/10 rounded-lg border border-secondary/30">
-                  <p className="font-semibold text-foreground mb-1">Optimization Opportunity</p>
-                  <p className="text-sm text-foreground">
-                    Average latency {showSimulated ? "increased 15%" : "stable"} in June. Consider geographic node rebalancing.
-                  </p>
-                </div>
-                <div className="p-4 bg-muted rounded-lg border border-border">
-                  <p className="font-semibold text-foreground mb-1">Growth Trend</p>
-                  <p className="text-sm text-foreground">
-                    Consistent {showSimulated ? "8%" : "-"} month-over-month growth in rewards indicates healthy network expansion.
-                  </p>
-                </div>
-              </div>
-            ) : (
-               <div className="flex items-center justify-center py-8 text-muted-foreground">
-                 <p>Insufficient data to generate insights.</p>
+             {hasData ? (
+               <div className="space-y-4">
+                 <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
+                   <p className="font-semibold text-foreground mb-1">Peak Performance</p>
+                   <p className="text-sm text-foreground">
+                     Network validated {showSimulated ? "12,500" : "-"} transactions in March with 23% higher throughput than average.
+                   </p>
+                 </div>
+                 <div className="p-4 bg-secondary/10 rounded-lg border border-secondary/30">
+                   <p className="font-semibold text-foreground mb-1">Optimization Opportunity</p>
+                   <p className="text-sm text-foreground">
+                     Average latency {showSimulated ? "increased 15%" : "stable"} in June. Consider geographic node rebalancing.
+                   </p>
+                 </div>
+                 <div className="p-4 bg-muted rounded-lg border border-border">
+                   <p className="font-semibold text-foreground mb-1">Growth Trend</p>
+                   <p className="text-sm text-foreground">
+                     Consistent {showSimulated ? "8%" : "-"} month-over-month growth in rewards indicates healthy network expansion.
+                   </p>
+                 </div>
                </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
-  )
-}
+              ) : (
+                <div className="flex items-center justify-center py-8 text-muted-foreground">
+                  <p>Real-time analytics data coming soon. Currently showing simulated data only.</p>
+                </div>
+              )}
+           </CardContent>
+         </Card>
+       </div>
+     </DashboardLayout>
+   )
+ }
