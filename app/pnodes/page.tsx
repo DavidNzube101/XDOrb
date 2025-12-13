@@ -50,17 +50,29 @@ export default function PNodesPage() {
   const [view, setView] = useState<'list' | 'grid'>('list');
   const [listStorageUnit, setListStorageUnit] = useState<'TB' | 'GB' | 'MB'>('TB');
   const [timeFormat, setTimeFormat] = useState<'absolute' | 'relative'>('relative');
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const savedView = localStorage.getItem('pnode-view') as 'list' | 'grid';
-    if (savedView) {
-      setView(savedView);
-    }
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('pnode-view', view);
-  }, [view]);
+    const savedView = localStorage.getItem('pnode-view') as 'list' | 'grid';
+    if (savedView && !isMobile) {
+      setView(savedView);
+    } else {
+      setView('list');
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (!isMobile) {
+      localStorage.setItem('pnode-view', view);
+    }
+  }, [view, isMobile]);
 
   const { data: result, isLoading, mutate } = useSWR(`/pnodes/all`, fetcher)
   const { data: statsResult } = useSWR('/dashboard/stats', dashboardStatsFetcher)
@@ -103,6 +115,7 @@ export default function PNodesPage() {
   })
     const [filterOpen, setFilterOpen] = useState(false)
     const [reloading, setReloading] = useState(false)
+    const [registrationInfo, setRegistrationInfo] = useState<{ date: string; time: string } | null>(null)
 
   const handleReload = async () => {
     setReloading(true)
@@ -112,6 +125,19 @@ export default function PNodesPage() {
       console.error("Reload error:", error)
     } finally {
       setReloading(false)
+    }
+  }
+
+  const fetchRegistrationInfo = async (id: string) => {
+    try {
+      const result = await apiClient.getPNodeRegistrationInfo(id)
+      if (result.error) {
+        setRegistrationInfo({ date: 'N/A', time: 'N/A' })
+      } else {
+        setRegistrationInfo({ date: result.data.registrationDate, time: result.data.registrationTime })
+      }
+    } catch (error) {
+      setRegistrationInfo({ date: 'N/A', time: 'N/A' })
     }
   }
 
@@ -264,11 +290,11 @@ export default function PNodesPage() {
                         <div>
                             <CardTitle>{statsResult?.data?.activeNodes ?? '-'}/{statsResult?.data?.totalNodes ?? '-'} Active</CardTitle>
                             <CardDescription>
-                                Fetched {filteredPnodes.length} nodes in {statsResult?.data?.fetchTime.toFixed(2) ?? '-'}s
+                                Fetched {statsResult?.data?.totalNodes ?? filteredPnodes.length} nodes in {statsResult?.data?.fetchTime.toFixed(2) ?? '-'}s
                             </CardDescription>
                         </div>
                         <div className="flex gap-2 items-center">
-                            <div className="flex items-center gap-1 rounded-md bg-muted p-1">
+                            <div className="hidden md:flex items-center gap-1 rounded-md bg-muted p-1">
                                 <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('list')}>
                                     <List className="w-4 h-4" />
                                 </Button>
@@ -284,7 +310,7 @@ export default function PNodesPage() {
                             </Button>
                             <Button variant="outline" size="sm" onClick={() => {
                                 setStatusFilter("all"); setRegionFilter("all"); setSearch(""); setCurrentPage(1);
-                            }}>
+                            }} className="hidden md:inline">
                                 Clear Filters
                             </Button>
                         </div>
@@ -300,7 +326,7 @@ export default function PNodesPage() {
                                     <tr className="border-b border-border" role="row">
                                         <th className="text-left p-3 font-semibold text-foreground">Name</th>
                                         <th className="text-left p-3 font-semibold text-foreground">Location</th>
-                                        <th className="text-left p-3 font-semibold text-foreground">Status</th>
+                                        <th className="text-left p-3 font-semibold text-foreground hidden md:table-cell">Status</th>
                                         <th className="text-left p-3 font-semibold text-foreground">Uptime (%)</th>
                                         <th className="text-left p-3 font-semibold text-foreground">Latency</th>
                                         <th className="text-left p-3 font-semibold text-foreground">
@@ -340,8 +366,8 @@ export default function PNodesPage() {
                                                             <span>{node.name}</span>
                                                             {node.registered && (
                                                                 <Dialog>
-                                                                    <DialogTrigger asChild onClick={e => e.stopPropagation()}>
-                                                                        <Badge variant="default" className="cursor-pointer text-[10px] px-1 h-5 bg-green-600 hover:bg-green-700">Registered</Badge>
+                                                                    <DialogTrigger asChild>
+                                                                        <Badge variant="default" className="cursor-pointer text-[10px] px-1 h-5 bg-green-600 hover:bg-green-700" onClick={(e) => { e.stopPropagation(); fetchRegistrationInfo(node.id) }}>Registered</Badge>
                                                                     </DialogTrigger>
                                                                     <DialogContent>
                                                                         <DialogHeader>
@@ -349,8 +375,8 @@ export default function PNodesPage() {
                                                                             <DialogDescription>This node is officially registered on the Xandeum network.</DialogDescription>
                                                                         </DialogHeader>
                                                                         <div className="py-4">
-                                                                            <p>Registration Date: TBD</p>
-                                                                            <p>Registration Time: TBD</p>
+                                                                            <p>Registration Date: {registrationInfo?.date || 'Loading...'}</p>
+                                                                            <p>Registration Time: {registrationInfo?.time || 'Loading...'}</p>
                                                                         </div>
                                                                         <DialogFooter>
                                                                             <a href="https://seenodes.xandeum.network/" target="_blank" rel="noopener noreferrer">
@@ -360,6 +386,7 @@ export default function PNodesPage() {
                                                                     </DialogContent>
                                                                 </Dialog>
                                                             )}
+                                                            <Badge className={cn(statusBadgeVariant(node.status), "md:hidden")}>{node.status.charAt(0).toUpperCase() + node.status.slice(1)}</Badge>
                                                         </div>
                                                         <Badge variant="secondary" className="w-fit text-[10px] px-1 h-5 mt-1 font-mono">XDN: {node.xdnScore ? node.xdnScore.toFixed(0) : 'N/A'}</Badge>
                                                     </div>
@@ -368,7 +395,7 @@ export default function PNodesPage() {
                                             </Tooltip>
                                         </td>
                                         <td className="p-3 text-muted-foreground">{node.location}</td>
-                                        <td className="p-3"><Badge className={cn(statusBadgeVariant(node.status))}>{node.status.charAt(0).toUpperCase() + node.status.slice(1)}</Badge></td>
+                                        <td className="p-3 hidden md:table-cell"><Badge className={cn(statusBadgeVariant(node.status))}>{node.status.charAt(0).toUpperCase() + node.status.slice(1)}</Badge></td>
                                         <td className="p-3 text-muted-foreground">{node.uptime.toFixed(0)}%</td>
                                         <td className="p-3 text-muted-foreground">{node.latency}ms</td>
                                         <td className="p-3 text-muted-foreground">{convertBytes(node.storageUsed, listStorageUnit)} / {convertBytes(node.storageCapacity, listStorageUnit)} {listStorageUnit}</td>

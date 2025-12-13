@@ -17,7 +17,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { ArrowLeft, Copy, HelpCircle, Brain, Sparkles, Share2, Download, AlertCircle, Cpu } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Typewriter } from "@/components/typewriter"
-import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import * as htmlToImage from 'html-to-image'
 
 // Dynamically import MapComponent to avoid SSR issues with Leaflet
@@ -49,6 +49,7 @@ export default function PNodeDetailPage() {
   const params = useParams()
   const id = params.id as string
   const [showSimulated, setShowSimulated] = useState(false)
+  const [registrationInfo, setRegistrationInfo] = useState<{ date: string; time: string } | null>(null)
 
   const { data: node, isLoading, error } = useSWR(
     id ? `/pnodes/${id}` : null,
@@ -115,6 +116,19 @@ export default function PNodeDetailPage() {
   const exportRef = useRef<HTMLDivElement>(null)
   const [isExporting, setIsExporting] = useState(false)
 
+  const fetchRegistrationInfo = async () => {
+    try {
+      const result = await apiClient.getPNodeRegistrationInfo(id)
+      if (result.error) {
+        setRegistrationInfo({ date: 'N/A', time: 'N/A' })
+      } else {
+        setRegistrationInfo({ date: result.data.registrationDate, time: result.data.registrationTime })
+      }
+    } catch (error) {
+      setRegistrationInfo({ date: 'N/A', time: 'N/A' })
+    }
+  }
+
   const handleDownloadPng = async () => {
     if (!exportRef.current) return
     setIsExporting(true)
@@ -170,11 +184,30 @@ export default function PNodeDetailPage() {
                    <div>
                      <div className="flex items-center gap-2">
                        <h1 className="text-3xl font-bold text-foreground">{node.name}</h1>
-                       {node.registered && (
-                         <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                           Registered
-                         </Badge>
-                       )}
+                        {node.registered && (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Badge variant="default" className="bg-green-600 hover:bg-green-700 cursor-pointer" onClick={fetchRegistrationInfo}>
+                                Registered
+                              </Badge>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Registered Node</DialogTitle>
+                                <DialogDescription>This node is officially registered on the Xandeum network.</DialogDescription>
+                              </DialogHeader>
+                              <div className="py-4">
+                                <p>Registration Date: {registrationInfo?.date || 'Loading...'}</p>
+                                <p>Registration Time: {registrationInfo?.time || 'Loading...'}</p>
+                              </div>
+                              <DialogFooter>
+                                <a href="https://seenodes.xandeum.network/" target="_blank" rel="noopener noreferrer">
+                                  <Button variant="link">See Xandeum's Publication</Button>
+                                </a>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        )}
                      </div>
                      <p className="text-muted-foreground">{node.location}</p>
                      {node.version && <p className="text-xs text-muted-foreground font-mono mt-1">v{node.version}</p>}

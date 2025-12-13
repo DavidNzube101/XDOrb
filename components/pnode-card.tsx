@@ -3,9 +3,11 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { PNodeMetrics } from "@/lib/api"
+import { PNodeMetrics, apiClient } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 interface PNodeCardProps {
   node: PNodeMetrics
@@ -37,6 +39,20 @@ const convertBytes = (bytes: number, unit: 'TB' | 'GB' | 'MB') => {
 
 export function PNodeCard({ node }: PNodeCardProps) {
   const [storageUnit, setStorageUnit] = useState<'TB' | 'GB' | 'MB'>('TB');
+  const [registrationInfo, setRegistrationInfo] = useState<{ date: string; time: string } | null>(null);
+
+  const fetchRegistrationInfo = async () => {
+    try {
+      const result = await apiClient.getPNodeRegistrationInfo(node.id);
+      if (result.error) {
+        setRegistrationInfo({ date: 'N/A', time: 'N/A' });
+      } else {
+        setRegistrationInfo({ date: result.data.registrationDate, time: result.data.registrationTime });
+      }
+    } catch (error) {
+      setRegistrationInfo({ date: 'N/A', time: 'N/A' });
+    }
+  };
 
   return (
     <Card 
@@ -98,9 +114,28 @@ export function PNodeCard({ node }: PNodeCardProps) {
           </div>
         </div>
         {node.registered && (
-            <Badge variant="default" className="mt-4 text-[10px] px-1 h-5 bg-green-600 hover:bg-green-700 w-fit">
-                Registered
-            </Badge>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Badge variant="default" className="mt-4 text-[10px] px-1 h-5 bg-green-600 hover:bg-green-700 w-fit cursor-pointer" onClick={(e) => { e.stopPropagation(); fetchRegistrationInfo() }}>
+                        Registered
+                    </Badge>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Registered Node</DialogTitle>
+                        <DialogDescription>This node is officially registered on the Xandeum network.</DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <p>Registration Date: {registrationInfo?.date || 'Loading...'}</p>
+                        <p>Registration Time: {registrationInfo?.time || 'Loading...'}</p>
+                    </div>
+                    <DialogFooter>
+                        <a href="https://seenodes.xandeum.network/" target="_blank" rel="noopener noreferrer">
+                            <Button variant="link">See Xandeum's Publication</Button>
+                        </a>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         )}
       </CardContent>
     </Card>

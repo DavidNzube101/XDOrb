@@ -24,7 +24,7 @@ export function EngagingLoader() {
   }, [])
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground relative">
       <Image
         src="/Logo.png"
         alt="Loading..."
@@ -45,6 +45,12 @@ export function EngagingLoader() {
           {loadingMessages[index]}
         </motion.p>
       </AnimatePresence>
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 shadow-lg text-center">
+        <p className="text-sm text-muted-foreground max-w-4xl mx-auto">
+          <strong>Why am I experiencing slow startup?</strong><br />
+          Our core infra is being housed on Render causing a <span className="text-accent font-semibold">cold start</span> after spin-down. This would only happen once.
+        </p>
+      </div>
     </div>
   )
 }
