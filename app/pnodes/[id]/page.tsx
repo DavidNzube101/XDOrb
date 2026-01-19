@@ -283,7 +283,17 @@ export default function PNodeDetailPage() {
     window.dispatchEvent(new Event('storage'))
   }
 
-  const { data: creditsData } = useSWR('/api/credits', creditsFetcher, { refreshInterval: 2000 });
+  const { data: creditsData } = useSWR('/api/credits', creditsFetcher);
+
+  const { data: nfts } = useSWR(
+    id ? `/pnodes/${id}/nfts` : null,
+    async () => {
+        const result = await apiClient.getPNodeNFTs(id)
+        if (result.error) return [] // Don't throw, just return empty
+        return result.data
+    },
+    { revalidateOnFocus: false }
+  )
 
   const nodeCredits = useMemo(() => {
     if (!creditsData || !id) return 0;
