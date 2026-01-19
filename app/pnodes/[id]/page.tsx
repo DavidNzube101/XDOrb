@@ -283,7 +283,7 @@ export default function PNodeDetailPage() {
     window.dispatchEvent(new Event('storage'))
   }
 
-  const { data: creditsData } = useSWR('/api/credits', creditsFetcher);
+  const { data: creditsData } = useSWR('/api/credits', creditsFetcher, { refreshInterval: 2000 });
 
   const { data: nfts } = useSWR(
     id ? `/pnodes/${id}/nfts` : null,
@@ -1088,6 +1088,40 @@ export default function PNodeDetailPage() {
                   </CardContent>
                 </Card>
             </div>
+
+            {nfts && nfts.length > 0 && (
+                <div className="lg:col-span-2 order-6">
+                    <Card className="border-border bg-card">
+                        <CardHeader>
+                            <CardTitle>Manager Assets</CardTitle>
+                            <CardDescription>NFTs held by the manager wallet associated with this pNode.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {nfts.map((nft, idx) => (
+                                    <div key={idx} className="group relative aspect-square bg-muted rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-all">
+                                        {nft.image ? (
+                                            <img 
+                                                src={nft.image} 
+                                                alt={nft.name} 
+                                                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-secondary/20">
+                                                <span className="text-xs text-muted-foreground">No Image</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                                            <p className="text-xs font-bold text-white truncate">{nft.name}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
           </div>
         </div>
       </DashboardLayout>
