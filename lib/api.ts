@@ -32,6 +32,12 @@ export interface PNodeMetrics {
   rpcPort?: number
 }
 
+export interface NFT {
+  name: string
+  image: string
+  description?: string
+}
+
 export interface DashboardStats {
   totalNodes: number
   activeNodes: number
@@ -121,6 +127,8 @@ export const apiClient = {
   getPNodeMetrics: (id: string) => fetchFromApi<PNodeMetrics>(`/pnodes/${id}/metrics`),
 
   getPNodeRegistrationInfo: (id: string) => fetchFromApi<{ registrationDate: string; registrationTime: string }>(`/pnodes/${id}/registration`),
+
+  getPNodeNFTs: (id: string) => fetchFromApi<NFT[]>(`/pnodes/${id}/nfts`),
 
   updatePNode: (id: string, data: Partial<PNodeMetrics>) =>
     fetchFromApi<PNodeMetrics>(`/pnodes/${id}`, {
