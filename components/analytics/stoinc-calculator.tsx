@@ -42,10 +42,11 @@ const ERA_BOOSTS = [
 
 const NFT_BOOSTS = [
   { label: "None (1x)", value: 1.0 },
-  { label: "Common (1.05x)", value: 1.05 },
-  { label: "Rare (1.1x)", value: 1.1 },
-  { label: "Epic (1.25x)", value: 1.25 },
-  { label: "Legendary (1.5x)", value: 1.5 },
+  { label: "Cricket/XENO (1.1x)", value: 1.1 },
+  { label: "Rabbit (1.5x)", value: 1.5 },
+  { label: "Coyote (2.5x)", value: 2.5 },
+  { label: "Dragon (4x)", value: 4.0 },
+  { label: "Titan (11x)", value: 11.0 },
 ]
 
 export function STOINCCalculator({ isOpen, onClose }: STOINCCalculatorProps) {
@@ -62,23 +63,29 @@ export function STOINCCalculator({ isOpen, onClose }: STOINCCalculatorProps) {
   const resultRef = useRef<HTMLDivElement>(null)
 
   const projection = useMemo(() => {
+    // Basic credits from storage and performance
     const storageCredits = pnodes * storageGb * performance
+    
+    // Boosts are geometric means across the fleet. 
+    // Here we assume the selected boost applies as the "effective average" or uniform boost.
     const totalGeoboost = nftBoost * eraBoost
+    
     const boostedWeight = storageCredits * totalGeoboost
+    
+    // STOINC is in SOL, not XAND
     const estStoincEpoch = (boostedWeight / Math.max(networkCredits, 1)) * totalNetworkFees * 0.94
     
+    // Rewards in XAND (Foundation)
     const monthlyFoundationReward = pnodes * 10000
     const monthlyStakeYield = (xandStaked * 0.05) / 12
-    const totalEstMonthly = monthlyFoundationReward + monthlyStakeYield
+    const totalXandMonthly = monthlyFoundationReward + monthlyStakeYield
 
     return {
       storageCredits,
       totalGeoboost,
       boostedWeight,
-      estStoincEpoch,
-      monthlyFoundationReward,
-      monthlyStakeYield,
-      totalEstMonthly
+      estStoincEpoch, // SOL
+      totalXandMonthly // XAND
     }
   }, [pnodes, storageGb, performance, xandStaked, nftBoost, eraBoost, totalNetworkFees, networkCredits])
 
