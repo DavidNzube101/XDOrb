@@ -94,6 +94,37 @@ const endpoints = [
     response: `{
   "data": [ { "rank": 1, "xdnScore": 98.5, "id": "..." } ]
 }`
+  },
+  {
+    method: "GET",
+    path: "/v1/operators",
+    title: "Network Operators",
+    description: "Get a list of all node managers and their fleets. Returns counts for total owned and registered nodes per manager.",
+    tier: "Gated",
+    params: [],
+    response: `{
+  "data": [
+    {
+      "manager": "Ec3nzEVc...",
+      "owned": 15,
+      "registered": 15,
+      "pnodes": ["2UPX...", "43aM..."]
+    }
+  ]
+}`
+  },
+  {
+    method: "GET",
+    path: "/v1/network/{region}/summary",
+    title: "AI Region Summary",
+    description: "Generates an AI-powered performance and health summary for all nodes in a specific region.",
+    tier: "Gated",
+    params: [{ name: "region", type: "string", description: "The region name (e.g. 'France')" }],
+    response: `{
+  "data": {
+    "summary": "The European region is showing high stability with an average uptime of..."
+  }
+}`
   }
 ]
 
