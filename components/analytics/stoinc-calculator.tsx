@@ -159,11 +159,11 @@ export function STOINCCalculator({ isOpen, onClose }: STOINCCalculatorProps) {
 
         ["XAND Staked", `${xandStaked.toLocaleString()} XAND`],
 
-        ["NFT Boost", `${nftBoost.toFixed(2)}x`],
+        ["NFT Boost (Eff.)", `${nftBoost.toFixed(2)}x`],
 
         ["Era Boost", `${eraBoost.toFixed(2)}x`],
 
-        ["Total Network Fees", `${totalNetworkFees.toLocaleString()} XAND`],
+        ["Total Network Fees", `${totalNetworkFees.toLocaleString()} SOL`],
 
         ["Total Network Credits", `${networkCredits.toLocaleString()}`]
 
@@ -211,7 +211,7 @@ export function STOINCCalculator({ isOpen, onClose }: STOINCCalculatorProps) {
 
       doc.setFontSize(24)
 
-      doc.text(`${projection.estStoincEpoch.toLocaleString(undefined, { maximumFractionDigits: 2 })} XAND`, 30, yPos + 35)
+      doc.text(`${projection.estStoincEpoch.toLocaleString(undefined, { maximumFractionDigits: 4 })} SOL`, 30, yPos + 35)
 
   
 
@@ -455,7 +455,7 @@ export function STOINCCalculator({ isOpen, onClose }: STOINCCalculatorProps) {
 
                         <div className="space-y-2">
 
-                          <Label className="text-xs uppercase font-bold text-muted-foreground">NFT Multiplier</Label>
+                          <Label className="text-xs uppercase font-bold text-muted-foreground">Effective NFT Boost (Geometric Mean)</Label>
 
                           <Select value={nftBoost.toString()} onValueChange={(v) => setNftBoost(Number(v))}>
 
@@ -525,7 +525,7 @@ export function STOINCCalculator({ isOpen, onClose }: STOINCCalculatorProps) {
 
                         <div className="space-y-2">
 
-                          <Label className="text-xs uppercase font-bold text-muted-foreground">Total Network Fees (XAND)</Label>
+                          <Label className="text-xs uppercase font-bold text-muted-foreground">Total Network Fees (SOL)</Label>
 
                           <Input type="number" value={totalNetworkFees} onChange={(e) => setTotalNetworkFees(Number(e.target.value))} className="rounded-none h-12 text-lg font-mono" />
 
@@ -575,11 +575,11 @@ export function STOINCCalculator({ isOpen, onClose }: STOINCCalculatorProps) {
 
                           <h4 className="text-5xl font-black font-mono text-primary">
 
-                            {projection.estStoincEpoch.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                            {projection.estStoincEpoch.toLocaleString(undefined, { maximumFractionDigits: 4 })}
 
                           </h4>
 
-                          <p className="text-xs text-muted-foreground mt-1">XAND per Epoch</p>
+                          <p className="text-xs text-muted-foreground mt-1">SOL per Epoch</p>
 
                         </div>
 
@@ -597,9 +597,9 @@ export function STOINCCalculator({ isOpen, onClose }: STOINCCalculatorProps) {
 
                           <div className="p-3 border border-border bg-background/50">
 
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase">Monthly Total</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase">Foundation Rewards</p>
 
-                            <p className="text-lg font-bold font-mono">{projection.totalEstMonthly.toLocaleString()} XAND</p>
+                            <p className="text-lg font-bold font-mono">{projection.totalXandMonthly.toLocaleString()} XAND/mo</p>
 
                           </div>
 
